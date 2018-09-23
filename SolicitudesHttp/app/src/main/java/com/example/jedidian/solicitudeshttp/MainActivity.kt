@@ -1,9 +1,7 @@
 package com.example.jedidian.solicitudeshttp
 
-import android.app.VoiceInteractor
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.os.StrictMode
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
@@ -11,10 +9,9 @@ import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import okhttp3.Call
+import okhttp3.OkHttpClient
 import java.io.IOException
-import java.io.InputStream
-import java.net.HttpURLConnection
-import java.net.URL
 
 class MainActivity : AppCompatActivity(), CompletadoListener {
 
@@ -29,6 +26,7 @@ class MainActivity : AppCompatActivity(), CompletadoListener {
         val btn_validarRed = findViewById<Button>(R.id.Btn_validarRed)
         val btn_solicitudHttp = findViewById<Button>(R.id.Btn_solicitudHttp)
         val btn_volley = findViewById<Button>(R.id.Btn_volley)
+        val btn_okHttp = findViewById<Button>(R.id.Btn_okHttp)
 
         btn_validarRed.setOnClickListener{
 
@@ -63,6 +61,16 @@ class MainActivity : AppCompatActivity(), CompletadoListener {
             }
         }
 
+        btn_okHttp.setOnClickListener{
+
+            //Codigo para verificar conexion a internet
+            if(Network.hayRed( this)){
+                solicitudOkHttp("http://www.google.com")
+            }else {
+                Toast.makeText(this, "Verifica tu conexion a internet", Toast.LENGTH_LONG).show()
+            }
+        }
+
     }
 
     //Metodo Volley
@@ -80,6 +88,33 @@ class MainActivity : AppCompatActivity(), CompletadoListener {
         }, Response.ErrorListener {  })
 
         queue.add(solicitud)
+    }
+
+    //Metodo para okHttp
+    private fun solicitudOkHttp(url:String){
+        var cliente = OkHttpClient()
+        var solicitud = okhttp3.Request.Builder().url(url).build()
+
+        cliente.newCall(solicitud).enqueue(object:okhttp3.Callback{
+
+            //Si algo falla
+            override fun onFailure(call: Call?, e: IOException?) {
+
+            }
+
+            //Si hay respuesta satisfactoria
+            override fun onResponse(call: Call?, response: okhttp3.Response) {
+                var resultado = response.body().string()
+
+                this@MainActivity.runOnUiThread {
+                    try {
+                        Log.d("solicitudOkHtpp", resultado)
+                    }catch (e: Exception){
+
+                    }
+                }
+            }
+        })
     }
 
 }
